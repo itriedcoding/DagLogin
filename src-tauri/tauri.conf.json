@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Prism",
+  "version": "1.0.0",
+  "identifier": "com.prism.browser",
+  "build": {
+    "frontendDist": "../ui/dist",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeDevCommand": "npm --prefix ui run dev",
+    "beforeBuildCommand": "npm --prefix ui run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Prism",
+        "width": 1380,
+        "height": 880,
+        "minWidth": 1040,
+        "minHeight": 660,
+        "center": true,
+        "resizable": true,
+        "decorations": false,
+        "dragDropEnabled": false,
+        "visible": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "publisher": "Prism",
+    "copyright": "Copyright © 2026 Prism",
+    "category": "Utility",
+    "shortDescription": "Isolated multi-profile browser",
+    "longDescription": "Prism runs unlimited, fully isolated browser profiles with per-profile proxies, timezone, locale, language and privacy controls.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installMode": "perUser",
+        "languages": ["English"],
+        "displayLanguageSelector": false
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+[package]
+name = "prism-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Core engine for Prism: multi-profile browser isolation, proxy relay and fingerprint control"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+aes-gcm = "0.10"
+argon2 = "0.5"
+base64 = "0.22"
+rand = "0.8"
+# TLS is delegated to SChannel on Windows (and to the platform store elsewhere),
+# which keeps the build free of C/asm toolchains.
+reqwest = { version = "0.12", default-features = false, features = [
+    "native-tls",
+    "socks",
+    "json",
+    "gzip",
+] }
+native-tls = "0.2"
+tokio-native-tls = "0.3"
+tokio = { version = "1", features = [
+    "rt-multi-thread",
+    "macros",
+    "net",
+    "io-util",
+    "process",
+    "time",
+    "sync",
+    "fs",
+] }
+tokio-tungstenite = { version = "0.24", default-features = false, features = [
+    "connect",
+    "handshake",
+] }
+futures-util = "0.3"
+sysinfo = "0.33"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+dirs = "5"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+bytes = "1"
+
+[dev-dependencies]
+tempfile = "3"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_Security_Cryptography",
+    "Win32_System_Threading",
+    "Win32_System_Memory",
+] }

@@ -1,0 +1,31 @@
+# Rust
+/target
+**/target
+*.rs.bk
+
+# Frontend
+ui/node_modules
+ui/dist
+ui/.vite
+*.tsbuildinfo
+
+# Tauri
+src-tauri/gen
+src-tauri/target
+
+# Local secrets and runtime data
+.env
+.env.local
+*.prism
+!docs/**/*.prism
+*.zip
+*.log
+vault.key
+prism.json
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db

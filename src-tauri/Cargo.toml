@@ -1,0 +1,36 @@
+[package]
+name = "prism"
+version = "1.0.0"
+edition = "2021"
+description = "Prism — isolated multi-profile browser for Windows"
+authors = ["Prism Browser Contributors"]
+license = "MIT"
+repository = "https://github.com/itriedcoding/DagLogin"
+
+[lib]
+name = "prism_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+prism-core = { path = "../crates/prism-core" }
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

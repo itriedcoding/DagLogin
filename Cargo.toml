@@ -1,0 +1,21 @@
+[workspace]
+resolver = "2"
+members = ["crates/prism-core", "src-tauri"]
+default-members = ["crates/prism-core"]
+
+[workspace.package]
+version = "1.0.0"
+edition = "2021"
+license = "MIT"
+authors = ["Prism Browser Contributors"]
+repository = "https://github.com/itriedcoding/DagLogin"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+
+[profile.dev]
+incremental = true
