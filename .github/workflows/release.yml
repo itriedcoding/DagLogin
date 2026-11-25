@@ -64,7 +64,12 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-          Copy-Item src-tauri/target/release/bundle/nsis/*.exe artifacts/
+          # A cargo workspace puts the bundle under the repository root's target/,
+          # not under src-tauri/. Fall back to the old location just in case.
+          $nsis = Join-Path $PWD "target/release/bundle/nsis"
+          if (-not (Test-Path $nsis)) { $nsis = Join-Path $PWD "src-tauri/target/release/bundle/nsis" }
+          Write-Host "Bundles: $nsis"
+          Copy-Item (Join-Path $nsis "*.exe") artifacts/
           $exe = Get-ChildItem artifacts/*.exe | Select-Object -First 1
           $hash = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLower()
           "$hash  $($exe.Name)" | Out-File -Encoding ascii artifacts/SHA256SUMS.txt
