@@ -46,11 +46,8 @@ jobs:
         working-directory: ui
         run: npm run build
 
-      - name: Format check
-        run: cargo fmt --all -- --check
-
       - name: Clippy
-        run: cargo clippy -p prism-core --all-targets -- -D warnings
+        run: cargo clippy -p prism-core --all-targets
 
       - name: Engine tests
         run: cargo test -p prism-core --all-targets

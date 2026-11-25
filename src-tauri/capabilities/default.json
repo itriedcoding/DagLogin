@@ -10,7 +10,6 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-close",
     "core:window:allow-is-maximized",
-    "core:webview:allow-internal-toggle-devtools",
     "dialog:default",
     "opener:default"
   ]

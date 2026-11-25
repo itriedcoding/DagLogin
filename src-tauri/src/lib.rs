@@ -256,9 +256,9 @@ fn save_text_file(path: String, contents: String) -> CommandResult<()> {
 #[tauri::command]
 fn open_path(path: String, reveal: bool) -> CommandResult<()> {
     let result = if reveal {
-        tauri_plugin_opener::reveal_item_in_dir(&path)
+        tauri_plugin_opener::reveal_item_in_dir(path.clone())
     } else {
-        tauri_plugin_opener::open_path(&path, None::<&str>)
+        tauri_plugin_opener::open_path(path.clone(), None::<&str>)
     };
     result.map_err(|e| format!("could not open {path}: {e}"))
 }
@@ -297,9 +297,10 @@ pub fn run() {
                                 if let Err(error) = handle.emit("engine://event", &event) {
                                     warn!(%error, "could not forward an engine event");
                                 }
-                                if let EngineEvent::ProfileStopped { .. } = event {
-                                    // Nothing else required: the engine already
-                                    // closed the history row and freed the slot.
+                                if matches!(event, EngineEvent::ProfileStopped { .. }) {
+                                    // The engine already closed the history row and
+                                    // freed the registry slot; nothing else to do.
+                                    tracing::debug!("profile stopped");
                                 }
                             }
                             Err(tokio::sync::broadcast::error::RecvError::Lagged(missed)) => {
