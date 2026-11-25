@@ -14,6 +14,8 @@ pub enum AppError {
     Json(#[from] serde_json::Error),
     #[error("encryption error: {0}")]
     Crypto(String),
+    #[error("archive error: {0}")]
+    Zip(#[from] zip::result::ZipError),
     #[error("network error: {0}")]
     Network(String),
     #[error("not found: {0}")]
@@ -37,7 +39,7 @@ impl AppError {
 }
 
 impl Serialize for AppError {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
         serializer.serialize_str(&self.to_string())
     }
 }

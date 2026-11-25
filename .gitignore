@@ -29,3 +29,4 @@ prism.json
 .idea
 .DS_Store
 Thumbs.db
+.tools/

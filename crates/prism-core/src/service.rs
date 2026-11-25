@@ -49,13 +49,14 @@ struct Running {
     name: String,
     pid: u32,
     cdp_port: u16,
+    /// Held only for its `Drop`: dropping the entry shuts the relay down.
+    #[allow(dead_code)]
     relay: Option<Relay>,
     relay_port: Option<u16>,
     supervisor_cancel: watch::Sender<bool>,
     supervisor: Option<JoinHandle<()>>,
     started: Instant,
     started_at: String,
-    history_id: i64,
     browser_dir: PathBuf,
     proxy_label: Option<String>,
 }
@@ -425,7 +426,7 @@ impl Service {
             }
         }
 
-        let detected = browser::detect(Some(&settings.browser_path))
+        let detected = browser::detect(Some(settings.browser_path.as_str()))
             .or_else(|| browser::detect(None))
             .ok_or_else(|| {
                 AppError::msg(
@@ -558,7 +559,6 @@ impl Service {
             supervisor: supervisor_task,
             started: Instant::now(),
             started_at: started_at.clone(),
-            history_id,
             browser_dir: browser_dir.clone(),
             proxy_label: proxy_label.clone(),
         };
@@ -1253,7 +1253,7 @@ mod tests {
         let imported = other.import_config(dest, Some("pw".into())).unwrap();
         assert_eq!(imported.imported, 1);
         let profiles = other.list_profiles(ProfileQuery::default()).unwrap();
-        assert_eq!(profiles[0].name, "IG DE");
+        assert_eq!(profiles[0].profile.name, "IG DE");
         assert_eq!(other.proxies().unwrap().len(), 1);
         assert!(other.proxies().unwrap()[0].password == "p");
     }
@@ -1276,7 +1276,7 @@ mod tests {
         let restored_profile = other.list_profiles(ProfileQuery::default()).unwrap();
         let cookies = other
             .paths
-            .profile_browser_dir(&restored_profile[0].id)
+            .profile_browser_dir(&restored_profile[0].profile.id)
             .join("Cookies");
         assert_eq!(std::fs::read(cookies).unwrap(), b"cookie-value");
     }
@@ -1305,7 +1305,11 @@ mod tests {
     fn browser_fallbacks_are_reported_without_panicking() {
         let (_dir, service) = service();
         let info = service.browser_info().unwrap();
-        assert!(info.candidates.len() >= 0);
+        assert_eq!(
+            info.detected,
+            info.path.is_some(),
+            "a detected browser must expose its path"
+        );
     }
 
     #[test]

@@ -78,7 +78,7 @@ pub async fn test(
         };
     }
     let url = proxy_url(protocol, host, port, username, password);
-    let proxy = match reqwest::Proxy::all(&url) {
+    let proxy = match reqwest::Proxy::all(url.as_str()) {
         Ok(proxy) => proxy,
         Err(err) => {
             return ProxyTest {

@@ -6,6 +6,7 @@
 //! overrides. Prism attaches to every page target of a profile's browser and
 //! applies that profile's values, including for tabs opened later.
 
+use futures_util::{SinkExt, StreamExt};
 use serde::Serialize;
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -58,7 +59,6 @@ pub async fn wait_for_cdp(port: u16, timeout: Duration) -> Option<String> {
 /// Gracefully closes a running browser through CDP. Chromium flushes cookies,
 /// local storage and history before exiting, which keeps a profile consistent.
 pub async fn close_browser(port: u16) -> bool {
-    use futures_util::SinkExt;
     let Some(url) = wait_for_cdp(port, Duration::from_secs(2)).await else {
         return false;
     };
@@ -178,8 +178,6 @@ async fn apply(sink: &mut Sink, state: &mut Session, session_id: &str) {
 /// Attaches to the browser and keeps applying `overrides` to every page target
 /// until the browser exits or `cancel` flips to true.
 pub async fn supervise(ws_url: String, overrides: Overrides, mut cancel: watch::Receiver<bool>) {
-    use futures_util::{SinkExt, StreamExt};
-
     let (ws, _) = match tokio_tungstenite::connect_async(ws_url).await {
         Ok(parts) => parts,
         Err(err) => {

@@ -41,7 +41,7 @@ impl Vault {
             let wrapped = protect(&material)?;
             std::fs::write(key_path, wrapped)?;
             restrict_permissions(key_path)?;
-            material
+            material.to_vec()
         };
 
         if key.len() != 32 {
@@ -217,7 +217,7 @@ fn restrict_permissions(_path: &Path) -> Result<()> {
 mod tests {
     use super::*;
 
-    fn vault() -> (tempdir::TempDir, Vault) {
+    fn vault() -> (tempfile::TempDir, Vault) {
         let dir = tempfile::tempdir().unwrap();
         let vault = Vault::load_or_create(&dir.path().join("vault.key")).unwrap();
         (dir, vault)
