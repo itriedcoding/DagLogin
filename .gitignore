@@ -30,3 +30,4 @@ prism.json
 .DS_Store
 Thumbs.db
 .tools/
+dist/

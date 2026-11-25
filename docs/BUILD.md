@@ -10,8 +10,18 @@
 | WebView2 runtime | Evergreen | Preinstalled on Windows 11; the installer bootstraps it on Windows 10 |
 
 > The repository itself has **no C dependencies** — the engine uses a pure-Rust store and
-> SChannel TLS — so `cargo check`/`cargo test` work with the GNU toolchain too. Only the final
-> `.exe` link and installer packaging want the MSVC toolchain and the Windows SDK.
+> SChannel TLS — so both toolchains work. The MSVC toolchain with the Windows SDK is the
+> supported path and is what CI uses.
+>
+> The GNU toolchain (`x86_64-pc-windows-gnu`) also builds the installer, but its link step
+> generates import libraries at build time, so `dlltool`, `as`, `ld` and `windres` must be on
+> `PATH` (any MinGW-w64 distribution provides them). Build with an explicit target:
+>
+> ```bash
+> tauri build --target x86_64-pc-windows-gnu
+> ```
+>
+> Output lands in `target/x86_64-pc-windows-gnu/release/bundle/nsis/`.
 
 ## Quick start
 
@@ -25,9 +35,9 @@ npm --prefix ui run build        # produces ui/dist
 npm --prefix ui run dev          # Vite on 127.0.0.1:1420
 cargo run -p prism               # Tauri window; beforeDevCommand is already wired
 
-# Installer
-npm install -g @tauri-apps/cli@^2
-tauri build --bundles nsis
+# Installer (the Tauri CLI is a dev dependency of ui/)
+npm --prefix ui install
+npm --prefix ui run tauri -- build --bundles nsis
 ```
 
 Output: `src-tauri/target/release/bundle/nsis/Prism_1.0.0_x64-setup.exe`.

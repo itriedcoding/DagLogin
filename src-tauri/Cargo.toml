@@ -9,7 +9,7 @@ repository = "https://github.com/itriedcoding/DagLogin"
 
 [lib]
 name = "prism_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
