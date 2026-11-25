@@ -462,10 +462,22 @@ mod tests {
             let mut request = [0u8; 4];
             socket.read_exact(&mut request).await.unwrap();
             assert_eq!(request[1], 0x01);
-            let mut len = [0u8; 1];
-            socket.read_exact(&mut len).await.unwrap();
-            let mut host = vec![0u8; len[0] as usize];
-            socket.read_exact(&mut host).await.unwrap();
+            let host = match request[3] {
+                0x01 => {
+                    let mut buf = [0u8; 4];
+                    socket.read_exact(&mut buf).await.unwrap();
+                    std::net::Ipv4Addr::from(buf).to_string()
+                }
+                0x03 => {
+                    let mut len = [0u8; 1];
+                    socket.read_exact(&mut len).await.unwrap();
+                    let mut buf = vec![0u8; len[0] as usize];
+                    socket.read_exact(&mut buf).await.unwrap();
+                    String::from_utf8(buf).unwrap()
+                }
+                other => panic!("unexpected SOCKS5 address type {other}"),
+            };
+            assert_eq!(host, "127.0.0.1", "relay must forward the requested host");
             let mut port = [0u8; 2];
             socket.read_exact(&mut port).await.unwrap();
             assert_eq!(

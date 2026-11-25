@@ -17,6 +17,35 @@ fn encode_userinfo(value: &str) -> String {
     out
 }
 
+fn decode_userinfo(value: &str) -> String {
+    let bytes = value.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes[index] == b'%' && index + 2 < bytes.len() {
+            let hex = std::str::from_utf8(&bytes[index + 1..index + 3]).ok();
+            if let Some(byte) = hex.and_then(|h| u8::from_str_radix(h, 16).ok()) {
+                out.push(byte);
+                index += 3;
+                continue;
+            }
+        }
+        out.push(bytes[index]);
+        index += 1;
+    }
+    String::from_utf8_lossy(&out).to_string()
+}
+
+/// Normalises a value that is meant to be an IP address, rejecting anything
+/// that is not one so a captcha page or error body never becomes an "exit IP".
+fn valid_ip(value: &str) -> Option<String> {
+    value
+        .trim()
+        .parse::<std::net::IpAddr>()
+        .ok()
+        .map(|ip| ip.to_string())
+}
+
 /// Builds the proxy URL used by the tester (and only by the tester — the browser
 /// never sees credentials, see `browser::relay`).
 pub fn proxy_url(protocol: ProxyProtocol, host: &str, port: u16, username: &str, password: &str) -> String {
@@ -162,7 +191,7 @@ fn parse_exit_info(body: &str) -> (Option<String>, Option<String>) {
             .get("ip")
             .or_else(|| value.get("query"))
             .and_then(|v| v.as_str())
-            .map(|v| v.trim().to_string());
+            .and_then(valid_ip);
         let country = value
             .get("country")
             .or_else(|| value.get("country_code"))
@@ -172,12 +201,7 @@ fn parse_exit_info(body: &str) -> (Option<String>, Option<String>) {
             return (ip, country);
         }
     }
-    let trimmed = body.trim();
-    if !trimmed.is_empty() && trimmed.len() <= 64 && !trimmed.contains(char::is_whitespace) {
-        (Some(trimmed.to_string()), None)
-    } else {
-        (None, None)
-    }
+    (valid_ip(body), None)
 }
 
 /// Parses pasted proxy lists. Accepts the formats people actually copy around:
@@ -247,8 +271,8 @@ fn parse_line(line: &str) -> Result<ProxyInput> {
     };
     let (username, password) = match credentials {
         Some(creds) => match creds.split_once(':') {
-            Some((user, pass)) => (user.to_string(), pass.to_string()),
-            None => (creds.to_string(), String::new()),
+            Some((user, pass)) => (decode_userinfo(user), decode_userinfo(pass)),
+            None => (decode_userinfo(creds), String::new()),
         },
         None => (String::new(), String::new()),
     };
